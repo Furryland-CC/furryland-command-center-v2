@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FURRYLAND Command Center 2.0</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--navy:#102b46;--blue:#1f5f8f;--sky:#e9f4fb;--orange:#f58220;--ink:#17324b;--muted:#6b7d8c;--white:#fff;--line:#dbe6ee}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;color:var(--ink);background:#f5f8fb}
+.topbar{height:64px;background:var(--navy);display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 2px 10px #0002;position:sticky;top:0;z-index:1000}
+.tab{border:0;background:transparent;color:#cfe1ee;font-weight:700;font-size:15px;padding:13px 20px;border-radius:8px;cursor:pointer}.tab.active{background:#fff;color:var(--navy)}
+.wrap{max-width:1220px;margin:auto;padding:28px 22px 40px}
+.brand{text-align:center;margin-bottom:22px}.brand h1{margin:0;font-size:34px;letter-spacing:2px;color:var(--navy)}.brand .paw{color:var(--orange)}.brand p{margin:6px 0 0;color:var(--muted);font-weight:700}
+.panel{background:white;border:1px solid var(--line);border-radius:15px;box-shadow:0 5px 20px #17324b12;padding:20px}
+.search-title{text-align:center;font-size:18px;font-weight:800;margin:0 0 14px}
+.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{position:relative}.field label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin:0 0 6px 3px;text-transform:uppercase;letter-spacing:.5px}
+input,select{width:100%;padding:14px 15px;border:1px solid #cbd9e4;border-radius:9px;font-size:16px;outline:none;background:#fff;color:var(--ink)}
+input:focus,select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #1f5f8f18}
+.status{margin-top:12px;min-height:22px;text-align:center;font-size:14px;font-weight:700;color:var(--muted)}
+.locator-content{margin-top:18px;display:grid;grid-template-columns:360px 1fr;gap:18px;align-items:start}.result{display:none}.result.show{display:block}
+.card{background:#fff;border:1px solid var(--line);border-radius:15px;padding:22px;box-shadow:0 5px 20px #17324b12}
+.card h2{margin:0 0 8px;color:var(--navy);font-size:25px}.pill{display:inline-block;background:var(--sky);color:var(--blue);font-size:12px;font-weight:800;padding:6px 9px;border-radius:999px;margin-bottom:16px}
+.info{border-top:1px solid var(--line);padding:13px 0}.info:first-of-type{border-top:0}.info small{display:block;color:var(--muted);font-weight:800;text-transform:uppercase;font-size:11px;margin-bottom:4px}.phone{font-size:21px;font-weight:800;color:var(--blue);cursor:pointer}.moego-btn{display:none;width:100%;margin:4px 0 14px;padding:13px 15px;border:0;border-radius:9px;background:var(--orange);color:#fff;font-size:15px;font-weight:900;text-decoration:none;text-align:center;cursor:pointer}.moego-btn.show{display:block}.zipmatch{font-size:22px;font-weight:900;color:var(--orange)}
+#map{height:410px;border-radius:15px;border:1px solid var(--line);box-shadow:0 5px 20px #17324b12;background:#dce8ef}
+.maphead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.maphead b{font-size:16px}.reset{border:0;background:var(--navy);color:#fff;border-radius:8px;padding:9px 12px;font-weight:700;cursor:pointer}
+.empty{margin-top:18px;text-align:center;background:#fff;border:1px dashed #cbd9e4;border-radius:15px;padding:28px;color:var(--muted)}
+.breed-page{display:none}.breed-page.show{display:block}.locator-page.hide{display:none}
+.breed-tools{display:grid;grid-template-columns:1fr auto;gap:12px;margin-bottom:18px}.toggle{display:flex;align-items:center;gap:8px;font-weight:700;background:var(--sky);padding:0 14px;border-radius:9px}.toggle input{width:auto}
+.breed-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.breed{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-weight:700}.breed.complex{border-left:5px solid var(--orange)}
+.legend{margin:12px 0;color:var(--muted);font-size:13px}.dot{display:inline-block;width:10px;height:10px;background:var(--orange);border-radius:50%;margin-right:5px}
+@media(max-width:800px){.search-grid,.locator-content,.breed-grid{grid-template-columns:1fr}.result.show{display:block}.result .card{margin-bottom:0}.breed-tools{grid-template-columns:1fr}.toggle{padding:12px}.wrap{padding:20px 12px}.brand h1{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<button class="tab active" id="locatorTab">ZIP Locator</button>
+<button class="tab" id="breedTab">Breed Guide</button>
+</div>
+<main class="wrap">
+<section class="locator-page" id="locatorPage">
+<div class="brand"><h1><span class="paw">◆</span> FURRYLAND</h1><p>Command Center 2.0 · Independent Edition</p></div>
+<div class="panel">
+<div class="search-title">Search Hubs</div>
+<div class="search-grid">
+<div class="field"><label>ZIP Code</label><input id="zipInput" inputmode="numeric" maxlength="5" placeholder="Enter ZIP Code"></div>
+<div class="field"><label>City / Hub</label><select id="citySelect"><option value="">Type or Browse City...</option></select></div>
+</div>
+<div class="status" id="status">Data loaded from your Masterkey workbook.</div>
+</div>
+<div class="locator-content">
+<div>
+<div id="empty" class="empty" style="margin-top:0">Enter a ZIP code or choose a hub to view coverage details.</div>
+<div id="result" class="result">
+<div class="card">
+<div class="pill">FURRYLAND HUB</div><h2 id="hubName"></h2>
+<div class="info"><small>Phone</small><div id="hubPhone" class="phone" title="Click to copy"></div></div><a id="moegoBtn" class="moego-btn" target="_blank" rel="noopener noreferrer">Open in MoeGo</a>
+<div class="info"><small>Local Time</small><div id="hubTime" style="font-size:20px;font-weight:800"></div></div>
+<div class="info"><small>ZIP Searched</small><div id="zipMatch" class="zipmatch">—</div></div>
+<div class="info"><small>Coverage</small><div id="coverage"></div></div>
+<div class="info"><small>Vaccination Requirements</small><div id="vaxInfo">Not published</div><div id="vaxDetails" style="color:var(--muted);font-size:13px;margin-top:6px">Location policy data pending approval.</div></div>
+<div class="info"><small>Card on File</small><div id="cardInfo">Not published</div></div>
+</div>
+</div>
+</div>
+<div>
+<div class="maphead"><b>Service Area Map</b><button class="reset" id="resetMap">Reset USA View</button></div>
+<div id="map"></div><div role="status" id="mapStatus" style="font-size:13px;margin-top:10px;color:var(--muted)">Choose a hub or enter a ZIP to highlight available Census coverage boundaries.</div>
+</div>
+</div>
+</section>
+<section class="breed-page" id="breedPage">
+<div class="brand"><h1><span class="paw">◆</span> BREED GUIDE</h1><p>Quick reference</p></div>
+<div class="panel">
+<div class="breed-tools">
+<input id="breedSearch" placeholder="Search breed...">
+<label class="toggle"><input type="checkbox" id="complexOnly"> Complex Coat only</label>
+</div>
+<div class="legend"><span class="dot"></span> Orange marker = Complex Coat breed</div>
+<div class="breed-grid" id="breedGrid"></div>
+</div>
+</section>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let DATA = {"locations":[],"allBreeds":[],"complexBreeds":[]};
+
+const DATA_URL = "./data.json";
+
+let byZip = new Map();
+
+function rebuildLocationIndex(){
+  byZip = new Map();
+  DATA.locations.forEach((loc,i)=>loc.zips.forEach(z=>{
+    const clean = String(z).trim();
+    if(/^\d{5}$/.test(clean) && !byZip.has(clean)) byZip.set(clean,i);
+  }));
+
+  citySelect.innerHTML='<option value="">Type or Browse City...</option>';
+  DATA.locations
+    .map((loc,i)=>({loc,i}))
+    .sort((a,b)=>a.loc.name.localeCompare(b.loc.name))
+    .forEach(item=>{
+      const o=document.createElement("option");
+      o.value=item.i;
+      o.textContent=item.loc.name;
+      citySelect.appendChild(o);
+    });
+}
+
+async function loadWebsiteData(){
+  const status=document.getElementById("status");
+  status.textContent="Loading latest Masterkey data...";
+  try{
+    const res=await fetch(DATA_URL+"?_ts="+Date.now(), {cache:"no-store"});
+    if(!res.ok) throw new Error("data.json request failed: "+res.status);
+    const latest=await res.json();
+    if(!latest || !Array.isArray(latest.locations)) throw new Error("Invalid website data.");
+    DATA=latest;
+    rebuildLocationIndex();
+    renderBreeds();
+    status.textContent="2.0 location data loaded.";
+  }catch(err){
+    console.error(err);
+    rebuildLocationIndex();
+    renderBreeds();
+    status.textContent="Using saved site data — automatic data file could not be reached.";
+  }
+}
+
+const tzMap={Eastern:"America/New_York",Central:"America/Chicago",Mountain:"America/Denver",Pacific:"America/Los_Angeles",Alaska:"America/Anchorage",Hawaii:"Pacific/Honolulu"};
+const citySelect=document.getElementById("citySelect");
+let map, marker, coverageLayer=null, mapRequest=0, activeLoc=null, activeZip="";
+function initMap(){if(!window.L){document.getElementById("mapStatus").textContent="Map library failed to load.";return;}map=L.map("map",{worldCopyJump:false}).setView([39.82,-98.57],4);L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap © CARTO",maxZoom:19,noWrap:true}).addTo(map);setTimeout(()=>map.invalidateSize(),250)}
+function localTime(loc){const tz=tzMap[loc.timezone]||"America/New_York";return new Intl.DateTimeFormat("en-US",{timeZone:tz,weekday:"short",hour:"numeric",minute:"2-digit",second:"2-digit"}).format(new Date())+" ("+loc.timezone+")"}
+async function focusMap(zip,loc){
+ if(!map)return;
+ const token=++mapRequest;
+ if(coverageLayer){coverageLayer.remove();coverageLayer=null}
+ if(marker){marker.remove();marker=null}
+ const status=document.getElementById("mapStatus");
+ const zips=[...new Set((loc.zips||[]).map(String).filter(z=>/^\d{5}$/.test(z)))];
+ status.textContent="Loading Census ZIP boundaries for "+loc.name+"...";
+ // 2020 Census ZCTA approximations, not precise USPS ZIP delivery boundaries.
+ const endpoint="https://tigerweb.geo.census.gov/arcgis/rest/services/TIGERweb/tigerWMS_Census2020/MapServer/84/query";
+ const batches=[];for(let i=0;i<zips.length;i+=15)batches.push(zips.slice(i,i+15));
+ const queue=[...batches];let polygons=[],failed=0;
+ async function loadBatch(batch){
+   const args=new URLSearchParams({where:"BASENAME IN ("+batch.map(z=>"'"+z+"'").join(",")+")",outFields:"BASENAME",returnGeometry:"true",outSR:"4326",geometryPrecision:"3",maxAllowableOffset:"0.005",f:"geojson"});
+   const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),16000);
+   try{const r=await fetch(endpoint+"?"+args,{signal:ctl.signal});if(!r.ok)throw Error("Map response "+r.status);const obj=await r.json();if(obj.error)throw Error(obj.error.message);return obj.features||[]}
+   catch(e){console.warn("Census coverage request failed",e);failed++;return []}
+   finally{clearTimeout(t)}
+ }
+ await Promise.all(Array.from({length:Math.min(3,queue.length)},async()=>{while(queue.length){let b=queue.shift();polygons.push(...await loadBatch(b))}}));
+ if(token!==mapRequest)return;
+ if(polygons.length){
+   coverageLayer=L.geoJSON({type:"FeatureCollection",features:polygons},{style:{color:"#f58220",weight:1.4,fillColor:"#1f5f8f",fillOpacity:.23},onEachFeature:(f,l)=>l.bindTooltip("ZIP "+escapeHtml(f.properties?.BASENAME||""))}).addTo(map);
+   const bounds=coverageLayer.getBounds();if(bounds.isValid())map.fitBounds(bounds.pad(.06),{maxZoom:10});
+ }
+ // Pin always refers to the ZIP the user entered, never the hub's arbitrary first ZIP.
+ const searchZip=zip&&/^\d{5}$/.test(zip)?zip:"";
+ if(searchZip){
+   try{const r=await fetch("https://api.zippopotam.us/us/"+searchZip);if(!r.ok)throw 0;const obj=await r.json();const p=obj.places?.[0];if(!p)throw 0;const ll=[+p.latitude,+p.longitude];marker=L.marker(ll).addTo(map).bindPopup("<b>"+escapeHtml(loc.name)+"</b><br>ZIP searched: "+searchZip).openPopup();if(!polygons.length)map.flyTo(ll,9)}catch(e){console.warn("Unable to locate searched ZIP",searchZip)}
+ }
+ status.textContent=polygons.length?`${polygons.length} Census ZIP boundaries shown · ${zips.length} assigned ZIP codes. ${polygons.length<zips.length?"Not all postal ZIPs have matching Census polygons. ":""}${failed?failed+" map request(s) failed. ":""}Boundaries are approximate.`:"No geographic boundaries were returned. ZIP matching and hub details remain available.";
+}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function showLoc(index,zip=""){
+ const loc=DATA.locations[index]; if(!loc)return; activeLoc=loc;activeZip=zip;
+ document.getElementById("hubName").textContent=loc.name;
+ document.getElementById("hubPhone").textContent=loc.phone||"—";
+ const mb=document.getElementById("moegoBtn");
+ if(loc.moego && /^https?:\/\//i.test(loc.moego)){mb.href=loc.moego;mb.classList.add("show")}else{mb.removeAttribute("href");mb.classList.remove("show")}
+ document.getElementById("hubTime").textContent=localTime(loc);
+ document.getElementById("zipMatch").textContent=zip||"—";
+ document.getElementById("vaxInfo").textContent="Not published";document.getElementById("vaxDetails").textContent="Location policy data pending approval.";document.getElementById("cardInfo").textContent="Not published";
+ const valid=loc.zips.filter(z=>/^\d{5}$/.test(z)).length, odd=loc.zips.length-valid;
+ document.getElementById("coverage").textContent=valid.toLocaleString()+" ZIP codes"+(odd?` • ${odd} special entries`:"");
+ document.getElementById("empty").style.display="none";document.getElementById("result").classList.add("show");
+ citySelect.value=index; document.getElementById("status").textContent=zip?`${zip} is assigned to ${loc.name}.`:`Viewing ${loc.name}.`;
+ setTimeout(()=>{map&&map.invalidateSize();focusMap(zip,loc)},50)
+}
+document.getElementById("zipInput").addEventListener("input",e=>{e.target.value=e.target.value.replace(/\D/g,"").slice(0,5);if(e.target.value.length===5){const i=byZip.get(e.target.value);if(i!==undefined)showLoc(i,e.target.value);else{document.getElementById("status").textContent=`${e.target.value} was not found in the Masterkey.`;document.getElementById("result").classList.remove("show");document.getElementById("empty").style.display="block";document.getElementById("empty").textContent="No FurryLand hub is assigned to that ZIP code in the current workbook."}}});
+citySelect.addEventListener("change",e=>{if(e.target.value!==""){document.getElementById("zipInput").value="";showLoc(+e.target.value,"")}});
+document.getElementById("hubPhone").addEventListener("click",()=>{if(activeLoc?.phone)navigator.clipboard?.writeText(activeLoc.phone)});
+document.getElementById("resetMap").addEventListener("click",()=>{
+  mapRequest++;if(coverageLayer){coverageLayer.remove();coverageLayer=null;}map?.setView([39.82,-98.57],4);document.getElementById("mapStatus").textContent="USA overview restored. Choose a hub to view its ZIP boundaries.";
+  if(marker){ marker.remove(); marker=null; }
+  activeLoc=null; activeZip="";
+  document.getElementById("moegoBtn").classList.remove("show");
+  document.getElementById("zipInput").value="";
+  citySelect.value="";
+  document.getElementById("result").classList.remove("show");
+  document.getElementById("empty").style.display="block";
+  document.getElementById("empty").textContent="Enter a ZIP code or choose a hub to view coverage details.";
+  document.getElementById("status").textContent="2.0 location data loaded.";
+});
+setInterval(()=>{if(activeLoc)document.getElementById("hubTime").textContent=localTime(activeLoc)},1000);
+function renderBreeds(){
+ const q=document.getElementById("breedSearch").value.toLowerCase().trim(), only=document.getElementById("complexOnly").checked;
+ const complex=new Set((DATA.complexBreeds||DATA.doubleBreeds||[]).map(x=>x.toLowerCase()));
+ const breeds=[...new Set((DATA.allBreeds||[]).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+ const arr=breeds.filter(b=>(!q||b.toLowerCase().includes(q))&&(!only||complex.has(b.toLowerCase())));
+ document.getElementById("breedGrid").innerHTML=arr.map(b=>`<div class="breed ${complex.has(b.toLowerCase())?"complex":""}">${escapeHtml(b)}</div>`).join("")||'<div class="empty">No breeds found.</div>';
+}
+document.getElementById("breedSearch").addEventListener("input",renderBreeds);document.getElementById("complexOnly").addEventListener("change",renderBreeds);
+document.getElementById("locatorTab").onclick=()=>{document.getElementById("locatorPage").classList.remove("hide");document.getElementById("breedPage").classList.remove("show");document.getElementById("locatorTab").classList.add("active");document.getElementById("breedTab").classList.remove("active");setTimeout(()=>map?.invalidateSize(),20)};
+document.getElementById("breedTab").onclick=()=>{document.getElementById("locatorPage").classList.add("hide");document.getElementById("breedPage").classList.add("show");document.getElementById("breedTab").classList.add("active");document.getElementById("locatorTab").classList.remove("active");renderBreeds()};
+window.addEventListener("load",async()=>{initMap();rebuildLocationIndex();renderBreeds();await loadWebsiteData()});
+</script>
+</body></html>
