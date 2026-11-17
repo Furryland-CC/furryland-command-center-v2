@@ -151,7 +151,7 @@ async function loadWebsiteData(){
 const tzMap={Eastern:"America/New_York",Central:"America/Chicago",Mountain:"America/Denver",Pacific:"America/Los_Angeles",Alaska:"America/Anchorage",Hawaii:"Pacific/Honolulu"};
 const citySelect=document.getElementById("citySelect");
 let map, marker, coverageLayer=null, mapRequest=0, activeLoc=null, activeZip="";
-function initMap(){if(!window.L){document.getElementById("mapStatus").textContent="Map library failed to load.";return;}map=L.map("map",{worldCopyJump:false}).setView([39.82,-98.57],4);L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",{attribution:"© OpenStreetMap © CARTO",maxZoom:19,noWrap:true}).addTo(map);setTimeout(()=>map.invalidateSize(),250)}
+function initMap(){if(!window.L){document.getElementById("mapStatus").textContent="Map library failed to load.";return;}map=L.map("map",{worldCopyJump:false}).setView([39.82,-98.57],4);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19,noWrap:true}).addTo(map);setTimeout(()=>map.invalidateSize(),250)}
 function localTime(loc){
  // IANA zones handle DST and AZ/Hawaii exceptions; old broad labels still work for imported records.
  const candidate=loc.timezone||'';const tz=tzMap[candidate]||candidate;
