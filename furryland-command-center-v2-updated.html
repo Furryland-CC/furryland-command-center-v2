@@ -1,0 +1,2372 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FURRYLAND Command Center 2.0</title>
+<link rel="preconnect" href="https://unpkg.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  color-scheme:dark;
+  --navy:#0e1118;
+  --blue:#77b9ed;
+  --sky:#222e3b;
+  --orange:#ffad66;
+  --ink:#e9eef4;
+  --muted:#acb8c6;
+  --line:#343d4b;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  color:var(--ink);
+  background:#101319;
+}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.topbar{
+  height:64px;
+  background:#090c11;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  position:sticky;
+  top:0;
+  z-index:1000;
+  padding:0 18px;
+  box-shadow:0 2px 14px #0009;
+}
+.tab{
+  border:0;
+  background:transparent;
+  color:#b8c6d7;
+  font-weight:700;
+  font-size:15px;
+  padding:13px 20px;
+  border-radius:8px;
+}
+.tab.active{background:#27313e;color:#fff}
+.tab:hover{filter:brightness(1.15)}
+.topbar-actions{position:absolute;right:18px;top:12px}
+.menu-btn,.action-btn,.reset{
+  border:1px solid #536071;
+  background:#27313e;
+  color:#f7f9fc;
+  border-radius:9px;
+  padding:10px 15px;
+  font-weight:700;
+}
+.menu-btn:hover,.action-btn:hover,.reset:hover{
+  background:#364558;
+}
+.menu-pop{
+  position:absolute;
+  right:0;
+  top:45px;
+  min-width:175px;
+  background:#1a2029;
+  border:1px solid var(--line);
+  border-radius:10px;
+  padding:7px;
+  box-shadow:0 10px 30px #0009;
+  z-index:1200;
+}
+.menu-item{
+  display:block;
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#edf3fb;
+  text-align:left;
+  padding:11px 12px;
+  border-radius:7px;
+  font-weight:700;
+}
+.menu-item:hover{background:#303c4c}
+[hidden]{display:none!important}
+.wrap{max-width:1220px;margin:auto;padding:28px 22px 40px}
+.brand{text-align:center;margin-bottom:22px}
+.brand h1{
+  margin:0;
+  font-size:34px;
+  letter-spacing:2px;
+  color:#f1f5f9;
+}
+.brand .paw{color:var(--orange)}
+.brand p{
+  margin:6px 0 0;
+  color:var(--muted);
+  font-weight:700;
+}
+.panel,.card,.empty,.breed{
+  background:#1a2029;
+  border:1px solid var(--line);
+  border-radius:15px;
+  box-shadow:0 5px 22px #0004;
+}
+.panel{padding:20px}
+.search-title{
+  text-align:center;
+  font-size:18px;
+  font-weight:800;
+  margin:0 0 14px;
+}
+.search-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{
+  display:block;
+  font-size:12px;
+  font-weight:800;
+  color:var(--muted);
+  margin:0 0 6px 3px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+input,select{
+  width:100%;
+  padding:14px 15px;
+  border:1px solid #465365;
+  border-radius:9px;
+  font-size:16px;
+  outline:none;
+  background:#11161d;
+  color:#f0f4f9;
+}
+input::placeholder{color:#a0abb9}
+input:focus,select:focus{
+  border-color:#83c9ff;
+  box-shadow:0 0 0 3px #83c9ff33;
+}
+input[type=checkbox]{width:auto;accent-color:#77b9ed}
+.status{
+  margin-top:12px;
+  min-height:22px;
+  text-align:center;
+  font-size:14px;
+  font-weight:700;
+  color:var(--muted);
+}
+.locator-content{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:360px 1fr;
+  gap:18px;
+  align-items:start;
+}
+.result{display:none}
+.result.show{display:block}
+.card{padding:22px}
+.card h2{margin:0 0 8px;color:#f1f5f9;font-size:25px}
+.pill{
+  display:inline-block;
+  background:#283443;
+  color:#afd7ff;
+  font-size:12px;
+  font-weight:800;
+  padding:6px 9px;
+  border-radius:999px;
+  margin-bottom:16px;
+}
+.info{border-top:1px solid var(--line);padding:13px 0}
+.info:first-of-type{border-top:0}
+.info small{
+  display:block;
+  color:var(--muted);
+  font-weight:800;
+  text-transform:uppercase;
+  font-size:11px;
+  margin-bottom:4px;
+}
+.phone{font-size:21px;font-weight:800;color:#9ad5ff;cursor:pointer}
+.moego-btn{
+  display:none;
+  width:100%;
+  margin:4px 0 14px;
+  padding:13px 15px;
+  border:0;
+  border-radius:9px;
+  background:#bd5e16;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+  text-decoration:none;
+  text-align:center;
+}
+.moego-btn.show{display:block}
+.moego-btn:hover{background:#d77627}
+.zipmatch{font-size:22px;font-weight:900;color:#ffba81}
+#map{
+  height:410px;
+  border-radius:15px;
+  border:1px solid #465365;
+  box-shadow:0 5px 22px #0004;
+  background:#151d25;
+}
+.maphead{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+  gap:10px;
+}
+.maphead b{font-size:16px}
+.empty{
+  margin-top:18px;
+  text-align:center;
+  border-style:dashed;
+  padding:28px;
+  color:var(--muted);
+}
+.leaflet-container{background:#19212b}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{
+  background:#202832;
+  color:#edf3fb;
+}
+.breed-page{display:none}
+.breed-page.show{display:block}
+.locator-page.hide{display:none}
+.breed-tools{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:12px;
+  margin-bottom:18px;
+}
+.toggle{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  font-weight:700;
+  background:#283443;
+  color:#afd7ff;
+  padding:0 14px;
+  border-radius:9px;
+}
+.breed-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+.breed{
+  border-radius:10px;
+  padding:12px 14px;
+  font-weight:700;
+}
+.breed.complex{border-left:5px solid var(--orange)}
+.legend{margin:12px 0;color:var(--muted);font-size:13px}
+.dot{
+  display:inline-block;
+  width:10px;
+  height:10px;
+  background:var(--orange);
+  border-radius:50%;
+  margin-right:5px;
+}
+.last-updated{
+  margin:14px auto 0;
+  text-align:center;
+  color:var(--muted);
+  font-size:13px;
+}
+.last-updated strong{color:var(--ink)}
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:#000b;
+  z-index:2000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.login-dialog{
+  width:min(100%,420px);
+  background:#1a2029;
+  border:1px solid #465365;
+  border-radius:16px;
+  padding:26px;
+  box-shadow:0 18px 60px #000b;
+  position:relative;
+}
+.login-dialog h2{margin:0 0 8px;color:#f1f5f9}
+.login-dialog p{color:var(--muted)}
+.login-dialog label{
+  display:block;
+  font-size:13px;
+  font-weight:700;
+  margin:16px 0 6px;
+}
+.login-dialog .action-btn{
+  width:100%;
+  margin-top:18px;
+  background:#345a78;
+}
+.close-login{
+  position:absolute;
+  right:14px;
+  top:12px;
+  border:0;
+  background:transparent;
+  color:#f1f5f9;
+  font-size:26px;
+}
+.login-error{
+  color:#ffb4a7!important;
+  font-size:13px;
+  min-height:18px;
+  margin:10px 0 0!important;
+}
+.admin-page{margin-top:6px}
+.admin-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:20px;
+}
+.admin-nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:15px 0;
+}
+.admin-nav button{
+  border:1px solid #465365;
+  background:#252f3b;
+  color:#e9eef4;
+  padding:11px 14px;
+  border-radius:8px;
+  font-weight:700;
+}
+.admin-nav button.active{
+  background:#496783;
+  border-color:#8eb9dd;
+}
+.admin-panel{padding:22px}
+.admin-panel h3{margin-top:0}
+.admin-note{color:var(--muted);line-height:1.6}
+.admin-status{color:#b5d8f5;font-size:13px}
+.admin-form-row{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex-wrap:wrap;
+  margin:12px 0;
+}
+.admin-form-row input:not([type=checkbox]){
+  flex:1;
+  min-width:170px;
+}
+.admin-form-row label{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.admin-form-row button,.breed-admin-item button{
+  border:1px solid var(--line);
+  border-radius:8px;
+  padding:10px 12px;
+  background:#303c4b;
+  color:var(--ink);
+  font-weight:700;
+}
+.admin-form-row button:hover:not(:disabled),
+.breed-admin-item button:hover:not(:disabled){
+  background:#42536a;
+}
+.breed-admin-list{
+  max-height:420px;
+  overflow:auto;
+  border:1px solid var(--line);
+  border-radius:10px;
+  margin:12px 0;
+}
+.breed-admin-item{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:10px 12px;
+  border-bottom:1px solid var(--line);
+}
+.breed-admin-item:last-child{border-bottom:0}
+.breed-admin-item .breed-name{flex:1;font-weight:700}
+.breed-admin-item label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:13px;
+  white-space:nowrap;
+}
+.admin-message{
+  min-height:20px;
+  color:#b5d8f5;
+  font-size:13px;
+  margin:10px 0;
+}
+.admin-message.error{color:#ffb4a7}
+.employee-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:14px 0}
+.employee-permissions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.employee-permissions label{display:flex;gap:9px;align-items:center;background:#242f3c;padding:11px;border-radius:8px}
+.employee-list{display:grid;gap:12px;margin-top:18px}
+.employee-card{border:1px solid var(--line);border-radius:10px;padding:15px;background:#141b24}
+.employee-card .admin-form-row{margin:8px 0}
+.employee-card button,.employee-actions button{border:1px solid #536071;background:#303c4b;color:var(--ink);border-radius:8px;padding:10px 12px;font-weight:700}
+.employee-card button:disabled{opacity:.45}
+@media(max-width:650px){.employee-grid,.employee-permissions{grid-template-columns:1fr}}
+.audit-item{
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+.audit-item:last-child{border-bottom:0}
+.audit-item small{
+  display:block;
+  color:var(--muted);
+  margin-top:5px;
+  line-height:1.5;
+}
+:focus-visible{outline:2px solid #94d4ff;outline-offset:2px}
+@media(max-width:800px){
+  .search-grid,.locator-content,.breed-grid{grid-template-columns:1fr}
+  .breed-tools{grid-template-columns:1fr}
+  .toggle{padding:12px}
+  .wrap{padding:20px 12px}
+  .brand h1{font-size:27px}
+}
+@media(max-width:650px){
+  .topbar{justify-content:flex-start;padding-left:10px}
+  .tab{padding:12px 9px;font-size:13px}
+  .topbar-actions{right:8px}
+  .menu-btn{padding:9px 10px}
+  .login-dialog{padding:22px}
+  .breed-admin-item{flex-wrap:wrap}
+}
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <button class="tab active" id="locatorTab">ZIP Locator</button>
+  <button class="tab" id="breedTab">Breed Guide</button>
+
+  <div class="topbar-actions">
+    <button class="menu-btn" id="menuButton"
+      aria-haspopup="true" aria-expanded="false"
+      aria-controls="menuPopup">☰ Menu</button>
+
+    <div class="menu-pop" id="menuPopup" hidden>
+      <button class="menu-item" id="menuLogin">Log In</button>
+      <button class="menu-item" id="menuDashboard" hidden>Admin Dashboard</button>
+      <button class="menu-item" id="menuLogout" hidden>Log Out</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section class="locator-page" id="locatorPage">
+  <div class="brand">
+    <h1><span class="paw">◆</span> FURRYLAND</h1>
+    <p>Command Center 2.0 · Independent Edition</p>
+  </div>
+
+  <div class="panel">
+    <div class="search-title">Search Hubs</div>
+    <div class="search-grid">
+      <div class="field">
+        <label for="zipInput">ZIP Code</label>
+        <input id="zipInput" inputmode="numeric" maxlength="5"
+          placeholder="Enter ZIP Code">
+      </div>
+      <div class="field">
+        <label for="citySelect">City / Hub</label>
+        <select id="citySelect">
+          <option value="">Type or Browse City...</option>
+        </select>
+      </div>
+    </div>
+    <div class="status" id="status">Loading location data...</div>
+  </div>
+
+  <div class="locator-content">
+    <div>
+      <div id="empty" class="empty" style="margin-top:0">
+        Enter a ZIP code or choose a hub to view coverage details.
+      </div>
+
+      <div id="result" class="result">
+        <div class="card">
+          <div class="pill">FURRYLAND HUB</div>
+          <h2 id="hubName"></h2>
+
+          <div class="info">
+            <small>Phone</small>
+            <div id="hubPhone" class="phone" title="Click to copy"></div>
+          </div>
+
+          <a id="moegoBtn" class="moego-btn"
+            target="_blank" rel="noopener noreferrer">Open in MoeGo</a>
+
+          <div class="info">
+            <small>Local Time</small>
+            <div id="hubTime" style="font-size:20px;font-weight:800"></div>
+          </div>
+
+          <div class="info">
+            <small>ZIP Searched</small>
+            <div id="zipMatch" class="zipmatch">—</div>
+          </div>
+
+          <div class="info">
+            <small>Coverage</small>
+            <div id="coverage"></div>
+          </div>
+
+          <div class="info">
+            <small>Vaccination Requirements</small>
+            <div id="vaxInfo">Not published</div>
+            <div id="vaxDetails" class="admin-note">
+              Location policy data pending approval.
+            </div>
+          </div>
+
+          <div class="info">
+            <small>Card on File</small>
+            <div id="cardInfo">Not published</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="maphead">
+        <b>Service Area Map</b>
+        <button class="reset" id="resetMap">Reset USA View</button>
+      </div>
+      <div id="map"></div>
+      <div id="mapStatus" role="status"
+        style="font-size:13px;margin-top:10px;color:var(--muted)">
+        Choose a hub or enter a ZIP to highlight available Census coverage boundaries.
+      </div>
+    </div>
+  </div>
+
+  <p class="last-updated" id="locatorUpdated">
+    ZIP Locator last updated:
+    <strong>Not recorded yet</strong>
+  </p>
+</section>
+
+<section class="breed-page" id="breedPage">
+  <div class="brand">
+    <h1><span class="paw">◆</span> BREED GUIDE</h1>
+    <p>Quick reference</p>
+  </div>
+
+  <div class="panel">
+    <div class="breed-tools">
+      <input id="breedSearch" placeholder="Search breed..."
+        aria-label="Search breeds">
+      <label class="toggle">
+        <input type="checkbox" id="complexOnly">
+        Complex Coat only
+      </label>
+    </div>
+
+    <div class="legend">
+      <span class="dot"></span>
+      Orange marker = Complex Coat breed
+    </div>
+
+    <div class="breed-grid" id="breedGrid"></div>
+
+    <p class="last-updated" id="breedUpdated">
+      Breed Guide last updated:
+      <strong>Not recorded yet</strong>
+    </p>
+  </div>
+</section>
+
+<section class="admin-page" id="adminPage" hidden>
+  <div class="brand">
+    <h1><span class="paw">◆</span> ADMIN DASHBOARD</h1>
+    <p>FurryLand Command Center 2.0</p>
+  </div>
+
+  <div class="panel">
+    <div class="admin-header">
+      <div>
+        <strong id="adminGreeting">Signed in</strong>
+        <div class="admin-status" id="adminSessionStatus"></div>
+      </div>
+      <button class="action-btn" id="adminBack">
+        ← Back to ZIP Locator
+      </button>
+    </div>
+
+    <div class="admin-nav" role="tablist" aria-label="Admin sections">
+      <button type="button" class="active" data-admin-tab="locations">Locations</button>
+      <button type="button" data-admin-tab="zips">ZIP Codes</button>
+      <button type="button" data-admin-tab="breeds">Breeds</button>
+      <button type="button" data-admin-tab="employees">Employees</button>
+      <button type="button" data-admin-tab="updates">Updates</button>
+    </div>
+
+    <div class="admin-panel" data-admin-panel="locations">
+      <h3>Locations</h3>
+      <p class="admin-note">Manage location details and policies in the live database. Changes are recorded in Updates. Select a location to edit, or create a new one.</p>
+      <p id="adminLocationCount"></p>
+      <p id="locationAdminMessage" class="admin-message" role="status" aria-live="polite"></p>
+      <div class="field"><label for="locationPick">Choose Location</label>
+        <select id="locationPick"><option value="">Select a location...</option></select>
+      </div>
+      <div class="admin-form-row"><button type="button" id="locationNew" class="action-btn">+ New Location</button></div>
+      <div id="locationEditor" hidden>
+        <div class="search-grid">
+          <div class="field"><label for="locName">Location name</label><input id="locName" maxlength="160"></div>
+          <div class="field"><label for="locPhone">Phone</label><input id="locPhone" maxlength="500"></div>
+          <div class="field"><label for="locMoego">MoeGo URL</label><input id="locMoego" maxlength="500"></div>
+          <div class="field"><label for="locTimezone">Time zone</label>
+            <select id="locTimezone"><option value="">Select...</option><option>Eastern</option><option>Central</option><option>Mountain</option><option>Pacific</option><option>Alaska</option><option>Hawaii</option></select>
+          </div>
+          <div class="field"><label for="locVaccination">Vaccination requirements</label><input id="locVaccination" maxlength="500"></div>
+          <div class="field"><label for="locCard">Card on file policy</label><input id="locCard" maxlength="500"></div>
+        </div>
+        <div class="field" style="margin-top:12px"><label for="locNotes">Internal notes</label><textarea id="locNotes" rows="3" maxlength="2000" style="width:100%;background:#11161d;color:#f0f4f9;border:1px solid #465365;border-radius:9px;padding:12px"></textarea></div>
+        <div class="admin-form-row"><label><input type="checkbox" id="locEnabled"> Location enabled in public ZIP Locator</label></div>
+        <div class="admin-form-row">
+          <button type="button" id="locationSave" class="action-btn">Save Location</button>
+          <button type="button" id="locationDisable" class="action-btn">Disable Location</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-panel" data-admin-panel="zips" hidden>
+      <h3>ZIP Codes</h3>
+      <p class="admin-note">Choose a location, then enter five-digit ZIP codes separated by commas, spaces, or new lines. ZIPs are saved as text so leading zeroes remain intact.</p>
+      <div class="field"><label for="zipLocationPick">Location</label><select id="zipLocationPick"><option value="">Select a location...</option></select></div>
+      <p id="zipEditorCount" class="admin-status"></p>
+      <textarea id="zipEditor" rows="12" spellcheck="false" style="width:100%;background:#11161d;color:#f0f4f9;border:1px solid #465365;border-radius:9px;padding:12px" placeholder="One ZIP per line" disabled></textarea>
+      <div class="admin-form-row"><button type="button" id="zipSave" class="action-btn" disabled>Save ZIP Codes</button></div>
+      <p id="zipAdminMessage" class="admin-message" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="admin-panel" data-admin-panel="breeds" hidden>
+      <h3>Breed Management</h3>
+
+      <p class="admin-note">
+        Add or delete breeds and update Complex Coat classifications.
+        Saved changes appear in the public Breed Guide.
+      </p>
+
+      <p class="admin-status" id="breedAdminNotice">
+        Connecting to breed database...
+      </p>
+
+      <div class="admin-form-row">
+        <input id="newBreedName" placeholder="New breed name"
+          aria-label="New breed name" disabled>
+
+        <label>
+          <input type="checkbox" id="newBreedComplex" disabled>
+          Complex Coat
+        </label>
+
+        <button type="button" id="addBreedButton" disabled>
+          Add Breed
+        </button>
+      </div>
+
+      <p class="admin-message" id="breedAdminMessage"
+        role="status" aria-live="polite"></p>
+
+      <div class="admin-form-row">
+        <input id="adminBreedSearch" placeholder="Search managed breeds..."
+          aria-label="Search managed breeds">
+        <span id="adminBreedCount" class="admin-status"></span>
+      </div>
+
+      <div class="breed-admin-list" id="breedAdminList"></div>
+    </div>
+
+    <div class="admin-panel" data-admin-panel="employees" hidden>
+      <h3>Employees</h3>
+      <p class="admin-note">
+        Create accounts, choose exactly what employees can manage, and deactivate accounts when needed.
+        FurryLandAdmin is permanently protected.
+      </p>
+      <p class="admin-message" id="employeeMessage" role="status" aria-live="polite"></p>
+      <form id="employeeCreateForm">
+        <h4>Create employee</h4>
+        <div class="employee-grid">
+          <div class="field"><label for="employeeNewName">Username</label><input id="employeeNewName" required minlength="3" maxlength="32" autocomplete="off"></div>
+          <div class="field"><label for="employeeNewPassword">Temporary password (14+ characters)</label><input id="employeeNewPassword" type="password" minlength="14" maxlength="128" required autocomplete="new-password"></div>
+        </div>
+        <div class="field"><label for="employeeNewRole">Account role</label><select id="employeeNewRole"><option value="editor">Employee</option><option value="viewer">Viewer</option><option value="super_admin">Super Admin (full access)</option></select></div>
+        <div class="employee-permissions" id="employeeCreatePermissions"></div>
+        <div class="employee-actions"><button type="submit" class="action-btn" id="employeeCreateButton">Create Account</button></div>
+      </form>
+      <h4>Existing accounts</h4>
+      <div class="employee-list" id="employeeList">Loading accounts...</div>
+      <hr style="border:0;border-top:1px solid var(--line);margin:24px 0">
+      <h4>Change your password</h4>
+      <form id="selfPasswordForm">
+        <div class="employee-grid">
+          <div class="field"><label for="selfOldPassword">Current password</label><input type="password" id="selfOldPassword" required autocomplete="current-password"></div>
+          <div class="field"><label for="selfNewPassword">New password (14+ characters)</label><input type="password" id="selfNewPassword" required minlength="14" maxlength="128" autocomplete="new-password"></div>
+        </div>
+        <button type="submit" class="action-btn">Change My Password</button>
+      </form>
+    </div>
+
+    <div class="admin-panel" data-admin-panel="updates" hidden>
+      <h3>Updates</h3>
+      <p class="admin-note">
+        Changes made through Breed Management are recorded here,
+        including the employee and time of the change.
+      </p>
+
+      <p id="adminLocatorUpdated">
+        ZIP Locator last updated: Not recorded yet
+      </p>
+      <p id="adminBreedUpdated">
+        Breed Guide last updated: Not recorded yet
+      </p>
+
+      <h3>Recent Change History</h3>
+      <div id="adminAuditHistory" role="status">
+        Loading recorded changes...
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="modal-backdrop" id="loginModal" hidden>
+  <div class="login-dialog" role="dialog" aria-modal="true"
+    aria-labelledby="loginTitle">
+
+    <button type="button" class="close-login" id="closeLogin"
+      aria-label="Close login">×</button>
+
+    <h2 id="loginTitle">Employee Log In</h2>
+    <p>
+      Sign in to access the protected dashboard.
+      ZIP lookup does not require login.
+    </p>
+
+    <form id="loginForm">
+      <label for="loginUsername">Username</label>
+      <input id="loginUsername" autocomplete="username" required>
+
+      <label for="loginPassword">Password</label>
+      <input id="loginPassword" type="password"
+        autocomplete="current-password" required>
+
+      <button class="action-btn" type="submit" id="loginSubmit">
+        Log In
+      </button>
+
+      <p class="login-error" id="loginError"
+        role="alert" aria-live="polite"></p>
+    </form>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+"use strict";
+
+const API_BASE =
+  "https://furryland-command-center-api1.stella-tarango.workers.dev";
+
+const DATA_URL = "./data.json";
+const el = id => document.getElementById(id);
+
+let DATA = {
+  locations: [],
+  allBreeds: [],
+  complexBreeds: []
+};
+
+let byZip = new Map();
+let map = null;
+let marker = null;
+let coverageLayer = null;
+let hubMarkerLayer = null;
+let hubMarkerVersion = 0;
+const zipCoordinateCache = new Map();
+let mapRequest = 0;
+let activeLoc = null;
+let activeZip = "";
+
+let sessionToken = null;
+let sessionUser = null;
+let currentPublicPage = "locator";
+
+let liveBreeds = [];
+let breedsConnected = false;
+let savingBreed = false;
+let managedLocations = [];
+let locationBusy = false;
+let newLocationMode = false;
+
+const tzMap = {
+  Eastern: "America/New_York",
+  Central: "America/Chicago",
+  Mountain: "America/Denver",
+  Pacific: "America/Los_Angeles",
+  Alaska: "America/Anchorage",
+  Hawaii: "Pacific/Honolulu"
+};
+
+/* ---------- General helpers ---------- */
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;"
+  }[char]));
+}
+
+function dateLabel(value) {
+  if (!value) return "Not recorded yet";
+
+  const normalized = String(value).includes("T")
+    ? String(value)
+    : String(value).replace(" ", "T") + "Z";
+
+  const date = new Date(normalized);
+
+  if (!Number.isFinite(date.getTime())) {
+    return "Not recorded yet";
+  }
+
+  const elapsed = Math.max(0, Date.now() - date.getTime());
+  const minutes = Math.floor(elapsed / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  let relative;
+
+  if (minutes < 1) relative = "just now";
+  else if (minutes < 60) {
+    relative = minutes + (minutes === 1 ? " minute ago" : " minutes ago");
+  } else if (hours < 24) {
+    relative = hours + (hours === 1 ? " hour ago" : " hours ago");
+  } else {
+    relative = days + (days === 1 ? " day ago" : " days ago");
+  }
+
+  return date.toLocaleString() + " (" + relative + ")";
+}
+
+async function apiRequest(path, options = {}) {
+  const headers = {
+    "Content-Type": "application/json",
+    ...(options.headers || {})
+  };
+
+  if (sessionToken) {
+    headers.Authorization = "Bearer " + sessionToken;
+  }
+
+  const response = await fetch(API_BASE + path, {
+    ...options,
+    headers,
+    cache: "no-store"
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(data.error || "API request failed: " + response.status);
+  }
+
+  return data;
+}
+
+const PERMISSION_LABELS = {
+  update_locations: "Update Existing Locations",
+  create_locations: "Create New Locations",
+  delete_locations: "Delete Locations",
+  view_audit_log: "View Audit Log",
+  manage_breeds: "Manage Breeds",
+  manage_users: "Manage Employee Accounts"
+};
+const ALL_PERMISSION_KEYS = Object.keys(PERMISSION_LABELS);
+function can(permission) {
+  return !!sessionToken && (
+    sessionUser?.role === "super_admin" ||
+    (sessionUser?.permissions || []).includes(permission)
+  );
+}
+function canEditBreeds() { return can("manage_breeds"); }
+
+/* ---------- Static location data ---------- */
+
+function rebuildLocationIndex() {
+  byZip = new Map();
+
+  DATA.locations.forEach((loc, index) => {
+    (loc.zips || []).forEach(zip => {
+      const clean = String(zip).trim();
+
+      if (/^\d{5}$/.test(clean) && !byZip.has(clean)) {
+        byZip.set(clean, index);
+      }
+    });
+  });
+
+  const citySelect = el("citySelect");
+  citySelect.replaceChildren();
+
+  const initial = document.createElement("option");
+  initial.value = "";
+  initial.textContent = "Type or Browse City...";
+  citySelect.appendChild(initial);
+
+  DATA.locations
+    .map((loc, index) => ({ loc, index }))
+    .sort((a, b) => a.loc.name.localeCompare(b.loc.name))
+    .forEach(item => {
+      const option = document.createElement("option");
+      option.value = item.index;
+      option.textContent = item.loc.name;
+      citySelect.appendChild(option);
+    });
+}
+
+async function loadWebsiteData() {
+  el("status").textContent = "Loading latest Masterkey data...";
+
+  try {
+    const response = await fetch(
+      DATA_URL + "?_ts=" + Date.now(),
+      { cache: "no-store" }
+    );
+
+    if (!response.ok) {
+      throw new Error("data.json request failed: " + response.status);
+    }
+
+    const latest = await response.json();
+
+    if (!latest || !Array.isArray(latest.locations)) {
+      throw new Error("Invalid website data");
+    }
+
+    DATA = latest;
+    rebuildLocationIndex();
+    renderHubMarkers();
+    renderBreeds();
+
+    el("status").textContent = "2.0 location data loaded.";
+  } catch (error) {
+    console.error("Location data:", error);
+    rebuildLocationIndex();
+    renderBreeds();
+
+    el("status").textContent =
+      "Location data could not be loaded. Please refresh or try again later.";
+  }
+
+  try {
+    const result = await apiRequest("/public/locations");
+    if (!Array.isArray(result.locations)) throw new Error("Invalid location response");
+    DATA.locations = result.locations;
+    rebuildLocationIndex();
+    renderHubMarkers();
+    el("status").textContent = "Live location data loaded.";
+  } catch (error) {
+    console.warn("Live locations unavailable; using saved data.json:", error);
+  }
+
+  try {
+    await loadLiveBreeds();
+  } catch (error) {
+    breedsConnected = false;
+    console.error("Breed database:", error);
+
+    el("breedAdminNotice").textContent =
+      "Live database unavailable. Editing is disabled. The public Breed Guide is using the saved breed list.";
+
+    renderAdminBreeds();
+  }
+
+  await loadUpdates();
+}
+
+/* ---------- ZIP Locator and Map ---------- */
+
+function initMap() {
+  if (!window.L) {
+    el("mapStatus").textContent = "Map library failed to load.";
+    return;
+  }
+
+  map = L.map("map", { worldCopyJump: false })
+    .setView([39.82, -98.57], 4);
+
+  hubMarkerLayer = L.layerGroup().addTo(map);
+
+  L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution: "© OpenStreetMap contributors",
+      maxZoom: 19,
+      noWrap: true
+    }
+  ).addTo(map);
+
+  setTimeout(() => map.invalidateSize(), 250);
+}
+
+function localTime(loc) {
+  const candidate = loc.timezone || "";
+  const timezone = tzMap[candidate] || candidate;
+
+  try {
+    return new Intl.DateTimeFormat("en-US", {
+      timeZone: timezone,
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZoneName: "short"
+    }).format(new Date());
+  } catch {
+    return "Time zone needs verification";
+  }
+}
+
+async function coordinatesForZip(zip) {
+  if (zipCoordinateCache.has(zip)) return zipCoordinateCache.get(zip);
+  try {
+    const response = await fetch("https://api.zippopotam.us/us/" + zip);
+    if (!response.ok) throw new Error("ZIP coordinates unavailable");
+    const data = await response.json();
+    const place = data.places?.[0];
+    const lat = Number(place?.latitude), lng = Number(place?.longitude);
+    const point = Number.isFinite(lat) && Number.isFinite(lng) ? [lat,lng] : null;
+    zipCoordinateCache.set(zip, point);
+    return point;
+  } catch { zipCoordinateCache.set(zip, null); return null; }
+}
+
+async function renderHubMarkers() {
+  if (!map || !hubMarkerLayer) return;
+  const version = ++hubMarkerVersion;
+  hubMarkerLayer.clearLayers();
+  const locations = DATA.locations.filter(loc => loc.enabled !== 0 && loc.enabled !== false);
+  const queue = [...locations];
+  async function worker() {
+    while (queue.length && version === hubMarkerVersion) {
+      const loc = queue.shift();
+      const zips = (loc.zips || []).map(String).filter(z => /^\d{5}$/.test(z));
+      let coords = null;
+      // Try several representative ZIPs if the first is not geocodable.
+      for (const zip of zips.slice(0, 4)) {
+        coords = await coordinatesForZip(zip);
+        if (coords) break;
+      }
+      if (version !== hubMarkerVersion) return;
+      if (!coords) continue;
+      const dot = L.circleMarker(coords, {
+        radius: 6, color: "#f6f8fc", weight: 2,
+        fillColor: "#49b5ef", fillOpacity: .95
+      });
+      const popup = document.createElement("div");
+      const name = document.createElement("strong");
+      name.textContent = loc.name;
+      const detail = document.createElement("div");
+      detail.textContent = "Approximate hub marker · " + zips.length + " ZIPs";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = "View hub details";
+      btn.style.cssText = "margin-top:8px;padding:6px 9px;cursor:pointer";
+      btn.addEventListener("click", () => {
+        const index = DATA.locations.findIndex(item => item.id === loc.id);
+        if (index >= 0) { showPublicPage("locator"); showLoc(index); }
+      });
+      popup.append(name, detail, btn);
+      dot.bindPopup(popup);
+      dot.addTo(hubMarkerLayer);
+    }
+  }
+  await Promise.all(Array.from({length: Math.min(5, queue.length)}, worker));
+}
+
+async function focusMap(zip, loc) {
+  if (!map) return;
+
+  const token = ++mapRequest;
+
+  if (coverageLayer) {
+    coverageLayer.remove();
+    coverageLayer = null;
+  }
+
+  if (marker) {
+    marker.remove();
+    marker = null;
+  }
+
+  const status = el("mapStatus");
+
+  const zips = [...new Set(
+    (loc.zips || [])
+      .map(String)
+      .filter(z => /^\d{5}$/.test(z))
+  )];
+
+  status.textContent =
+    "Loading Census ZIP boundaries for " + loc.name + "...";
+
+  const endpoint =
+    "https://tigerweb.geo.census.gov/arcgis/rest/services/" +
+    "TIGERweb/tigerWMS_Census2020/MapServer/84/query";
+
+  const batches = [];
+
+  for (let i = 0; i < zips.length; i += 15) {
+    batches.push(zips.slice(i, i + 15));
+  }
+
+  const queue = [...batches];
+  const polygons = [];
+  let failed = 0;
+
+  async function loadBatch(batch) {
+    const args = new URLSearchParams({
+      where: "BASENAME IN (" +
+        batch.map(z => "'" + z + "'").join(",") + ")",
+      outFields: "BASENAME",
+      returnGeometry: "true",
+      outSR: "4326",
+      geometryPrecision: "3",
+      maxAllowableOffset: "0.005",
+      f: "geojson"
+    });
+
+    const controller = new AbortController();
+
+    const timeout = setTimeout(
+      () => controller.abort(),
+      16000
+    );
+
+    try {
+      const response = await fetch(
+        endpoint + "?" + args,
+        { signal: controller.signal }
+      );
+
+      if (!response.ok) {
+        throw new Error("Map response " + response.status);
+      }
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error.message);
+      }
+
+      return data.features || [];
+    } catch (error) {
+      console.warn("Census coverage request failed", error);
+      failed++;
+      return [];
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  await Promise.all(
+    Array.from(
+      { length: Math.min(3, queue.length) },
+      async () => {
+        while (queue.length) {
+          const batch = queue.shift();
+          polygons.push(...await loadBatch(batch));
+        }
+      }
+    )
+  );
+
+  if (token !== mapRequest) return;
+
+  if (polygons.length) {
+    coverageLayer = L.geoJSON({
+      type: "FeatureCollection",
+      features: polygons
+    }, {
+      style: {
+        color: "#f58220",
+        weight: 1.4,
+        fillColor: "#1f5f8f",
+        fillOpacity: 0.23
+      },
+      onEachFeature: (feature, layer) => {
+        layer.bindTooltip(
+          "ZIP " + escapeHtml(feature.properties?.BASENAME || "")
+        );
+      }
+    }).addTo(map);
+
+    const bounds = coverageLayer.getBounds();
+
+    if (bounds.isValid()) {
+      map.fitBounds(bounds.pad(0.06), { maxZoom: 10 });
+    }
+  }
+
+  const searchedZip =
+    zip && /^\d{5}$/.test(zip) ? zip : "";
+
+  if (searchedZip) {
+    try {
+      const coordinates = await coordinatesForZip(searchedZip);
+      if (!coordinates) throw new Error("ZIP location unavailable");
+      if (token !== mapRequest) return;
+
+      marker = L.marker(coordinates)
+        .addTo(map)
+        .bindPopup(
+          "<b>" + escapeHtml(loc.name) + "</b>" +
+          "<br>ZIP searched: " + searchedZip
+        )
+        .openPopup();
+
+      if (!polygons.length) {
+        map.flyTo(coordinates, 9);
+      }
+    } catch (error) {
+      console.warn("Unable to locate searched ZIP", error);
+    }
+  }
+
+  if (token !== mapRequest) return;
+
+  status.textContent = polygons.length
+    ? polygons.length + " Census ZIP boundaries shown · " +
+      zips.length + " assigned ZIP codes. " +
+      (polygons.length < zips.length
+        ? "Not all postal ZIPs have matching Census polygons. "
+        : "") +
+      (failed ? failed + " map request(s) failed. " : "") +
+      "Boundaries are approximate."
+    : "No geographic boundaries were returned. ZIP matching and hub details remain available.";
+}
+
+function showLoc(index, zip = "") {
+  const loc = DATA.locations[index];
+  if (!loc) return;
+
+  activeLoc = loc;
+  activeZip = zip;
+
+  el("hubName").textContent = loc.name;
+  el("hubPhone").textContent = loc.phone || "—";
+
+  const moego = el("moegoBtn");
+
+  if (loc.moego && /^https?:\/\//i.test(loc.moego)) {
+    moego.href = loc.moego;
+    moego.classList.add("show");
+  } else {
+    moego.removeAttribute("href");
+    moego.classList.remove("show");
+  }
+
+  el("hubTime").textContent = localTime(loc);
+  el("zipMatch").textContent = zip || "—";
+
+  el("vaxInfo").textContent = loc.vaccination || "Not published";
+  el("vaxDetails").textContent = loc.vaccination
+    ? "" : "Location policy data pending approval.";
+  el("cardInfo").textContent = loc.card_on_file || "Not published";
+
+  const assigned = loc.zips || [];
+  const valid = assigned.filter(
+    z => /^\d{5}$/.test(String(z))
+  ).length;
+  const special = assigned.length - valid;
+
+  el("coverage").textContent =
+    valid.toLocaleString() + " ZIP codes" +
+    (special ? " • " + special + " special entries" : "");
+
+  el("empty").style.display = "none";
+  el("result").classList.add("show");
+
+  el("citySelect").value = String(index);
+
+  el("status").textContent = zip
+    ? zip + " is assigned to " + loc.name + "."
+    : "Viewing " + loc.name + ".";
+
+  setTimeout(() => {
+    if (map) map.invalidateSize();
+    focusMap(zip, loc);
+  }, 50);
+}
+
+function resetMap() {
+  mapRequest++;
+
+  if (coverageLayer) {
+    coverageLayer.remove();
+    coverageLayer = null;
+  }
+
+  if (marker) {
+    marker.remove();
+    marker = null;
+  }
+
+  if (map) map.setView([39.82, -98.57], 4);
+
+  activeLoc = null;
+  activeZip = "";
+
+  el("mapStatus").textContent =
+    "USA overview restored. Choose a hub to view its ZIP boundaries.";
+
+  el("moegoBtn").classList.remove("show");
+  el("zipInput").value = "";
+  el("citySelect").value = "";
+  el("result").classList.remove("show");
+  el("empty").style.display = "block";
+  el("empty").textContent =
+    "Enter a ZIP code or choose a hub to view coverage details.";
+  el("status").textContent = "2.0 location data loaded.";
+}
+
+el("zipInput").addEventListener("input", event => {
+  const input = event.target;
+
+  input.value = input.value.replace(/\D/g, "").slice(0, 5);
+
+  if (input.value.length !== 5) return;
+
+  const index = byZip.get(input.value);
+
+  if (index !== undefined) {
+    showLoc(index, input.value);
+  } else {
+    el("status").textContent =
+      input.value + " was not found in the Masterkey.";
+
+    el("result").classList.remove("show");
+    el("empty").style.display = "block";
+    el("empty").textContent =
+      "No FurryLand hub is assigned to that ZIP code in the current workbook.";
+  }
+});
+
+el("citySelect").addEventListener("change", event => {
+  if (event.target.value === "") return;
+
+  el("zipInput").value = "";
+  showLoc(Number(event.target.value), "");
+});
+
+el("hubPhone").addEventListener("click", () => {
+  if (activeLoc?.phone) {
+    navigator.clipboard?.writeText(activeLoc.phone);
+  }
+});
+
+el("resetMap").addEventListener("click", resetMap);
+
+setInterval(() => {
+  if (activeLoc) {
+    el("hubTime").textContent = localTime(activeLoc);
+  }
+}, 1000);
+
+/* ---------- Public Breed Guide ---------- */
+
+function renderBreeds() {
+  const query = el("breedSearch").value.toLowerCase().trim();
+  const complexOnly = el("complexOnly").checked;
+
+  const complex = new Set(
+    (DATA.complexBreeds || DATA.doubleBreeds || [])
+      .map(name => String(name).toLowerCase())
+  );
+
+  const names = [...new Set(
+    (DATA.allBreeds || []).filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b));
+
+  const filtered = names.filter(name => {
+    const matchesSearch =
+      !query || name.toLowerCase().includes(query);
+
+    const matchesCoat =
+      !complexOnly || complex.has(name.toLowerCase());
+
+    return matchesSearch && matchesCoat;
+  });
+
+  el("breedGrid").innerHTML = filtered.map(name => {
+    const isComplex = complex.has(name.toLowerCase());
+
+    return '<div class="breed ' +
+      (isComplex ? "complex" : "") +
+      '">' + escapeHtml(name) + "</div>";
+  }).join("") || '<div class="empty">No breeds found.</div>';
+}
+
+el("breedSearch").addEventListener("input", renderBreeds);
+el("complexOnly").addEventListener("change", renderBreeds);
+
+async function loadLiveBreeds() {
+  const result = await apiRequest("/public/breeds");
+
+  if (!Array.isArray(result.breeds)) {
+    throw new Error("Invalid breed API response");
+  }
+
+  liveBreeds = result.breeds;
+  breedsConnected = true;
+
+  DATA.allBreeds = liveBreeds.map(breed => breed.name);
+
+  DATA.complexBreeds = liveBreeds
+    .filter(breed => Number(breed.complex_coat) === 1)
+    .map(breed => breed.name);
+
+  renderBreeds();
+  renderAdminBreeds();
+
+  el("breedAdminNotice").textContent =
+    "Connected to the live Cloudflare database. " +
+    liveBreeds.length + " breeds loaded.";
+}
+
+/* ---------- Update timestamps ---------- */
+
+async function loadUpdates() {
+  try {
+    const result = await apiRequest("/public/updates");
+
+    const updates = Object.fromEntries(
+      (result.updates || [])
+        .map(item => [item.section, item])
+    );
+
+    const breedRecord = updates.breeds;
+
+    const locatorRecord =
+      updates.zip_locator || updates.locations;
+
+    const breedLabel = dateLabel(breedRecord?.updated_at);
+    const locatorLabel = dateLabel(locatorRecord?.updated_at);
+
+    el("breedUpdated").querySelector("strong").textContent =
+      breedLabel;
+
+    el("locatorUpdated").querySelector("strong").textContent =
+      locatorLabel;
+
+    el("adminBreedUpdated").textContent =
+      "Breed Guide last updated: " + breedLabel +
+      (breedRecord?.updated_by
+        ? " — by " + breedRecord.updated_by
+        : "");
+
+    el("adminLocatorUpdated").textContent =
+      "ZIP Locator last updated: " + locatorLabel +
+      (locatorRecord?.updated_by
+        ? " — by " + locatorRecord.updated_by
+        : "");
+  } catch (error) {
+    console.warn("Update timestamps unavailable:", error);
+  }
+}
+
+/* ---------- Authentication ---------- */
+
+function toggleMenu(force) {
+  const open = typeof force === "boolean"
+    ? force
+    : el("menuPopup").hidden;
+
+  el("menuPopup").hidden = !open;
+
+  el("menuButton").setAttribute(
+    "aria-expanded",
+    String(open)
+  );
+}
+
+function updateAuthMenu() {
+  el("menuLogin").hidden = !!sessionToken;
+  el("menuDashboard").hidden = !sessionToken;
+  el("menuLogout").hidden = !sessionToken;
+}
+
+function showPublicPage(which) {
+  currentPublicPage = which;
+
+  el("adminPage").hidden = true;
+  el("locatorPage").classList.toggle(
+    "hide", which !== "locator"
+  );
+  el("breedPage").classList.toggle(
+    "show", which === "breed"
+  );
+
+  el("locatorTab").classList.toggle(
+    "active", which === "locator"
+  );
+  el("breedTab").classList.toggle(
+    "active", which === "breed"
+  );
+
+  if (which === "locator") {
+    setTimeout(() => map?.invalidateSize(), 40);
+  }
+
+  if (which === "breed") {
+    renderBreeds();
+    loadLiveBreeds().catch(error => {
+      console.warn("Unable to refresh breeds:", error);
+    });
+    loadUpdates();
+  }
+}
+
+function openLogin() {
+  toggleMenu(false);
+  el("loginError").textContent = "";
+  el("loginPassword").value = "";
+  el("loginModal").hidden = false;
+  el("loginUsername").focus();
+}
+
+function closeLogin() {
+  el("loginModal").hidden = true;
+  el("loginPassword").value = "";
+}
+
+function openDashboard() {
+  if (!sessionToken) {
+    openLogin();
+    return;
+  }
+
+  toggleMenu(false);
+
+  el("locatorPage").classList.add("hide");
+  el("breedPage").classList.remove("show");
+
+  el("locatorTab").classList.remove("active");
+  el("breedTab").classList.remove("active");
+
+  el("adminPage").hidden = false;
+
+  el("adminGreeting").textContent =
+    "Signed in as " + (sessionUser?.username || "employee");
+
+  el("adminSessionStatus").textContent =
+    "Protected account session · " +
+    (sessionUser?.role || "employee");
+
+  el("locationNew").disabled = !can("create_locations");
+  el("adminLocationCount").textContent =
+    DATA.locations.length +
+    " locations currently loaded in the public locator.";
+
+  renderAdminBreeds();
+  loadManagedLocations();
+  loadUpdates();
+  loadHistory();
+  renderEmployeeCreate();
+  if (can("manage_users")) loadEmployees();
+  document.querySelector('[data-admin-tab="employees"]').hidden = !can("manage_users");
+  document.querySelector('[data-admin-tab="updates"]').hidden = !can("view_audit_log");
+}
+
+function clearSession() {
+  sessionToken = null;
+  sessionUser = null;
+  managedLocations = [];
+  el("locationEditor").hidden = true;
+  employees = [];
+  el("zipEditor").disabled = true;
+  el("zipSave").disabled = true;
+
+  updateAuthMenu();
+  closeLogin();
+  toggleMenu(false);
+  showPublicPage("locator");
+}
+
+async function loginRequest(event) {
+  event.preventDefault();
+
+  const username = el("loginUsername").value.trim();
+  const password = el("loginPassword").value;
+  const button = el("loginSubmit");
+
+  el("loginError").textContent = "";
+  button.disabled = true;
+  button.textContent = "Signing in...";
+
+  try {
+    const data = await apiRequest("/login", {
+      method: "POST",
+      body: JSON.stringify({ username, password })
+    });
+
+    const token =
+      data.token || data.access_token || data.session_token;
+
+    if (typeof token !== "string" || !token) {
+      throw new Error(
+        "Login succeeded, but no session token was returned."
+      );
+    }
+
+    sessionToken = token;
+    sessionUser = data.user || { username };
+
+    updateAuthMenu();
+    closeLogin();
+    openDashboard();
+  } catch (error) {
+    el("loginError").textContent =
+      error instanceof TypeError
+        ? "Could not contact the API. Check the Worker connection."
+        : error.message;
+  } finally {
+    button.disabled = false;
+    button.textContent = "Log In";
+  }
+}
+
+async function logoutRequest() {
+  const token = sessionToken;
+
+  clearSession();
+
+  if (token) {
+    try {
+      await fetch(API_BASE + "/logout", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + token
+        },
+        cache: "no-store"
+      });
+    } catch (error) {
+      console.warn("Server logout not confirmed:", error);
+    }
+  }
+}
+
+/* ---------- Admin Breed Management ---------- */
+
+function showBreedMessage(message, isError = false) {
+  const target = el("breedAdminMessage");
+
+  target.textContent = message;
+  target.classList.toggle("error", isError);
+}
+
+function setBreedFormState() {
+  const allowed =
+    canEditBreeds() && breedsConnected && !savingBreed;
+
+  el("newBreedName").disabled = !allowed;
+  el("newBreedComplex").disabled = !allowed;
+  el("addBreedButton").disabled = !allowed;
+}
+
+function renderAdminBreeds() {
+  const container = el("breedAdminList");
+  container.replaceChildren();
+
+  if (!breedsConnected) {
+    container.textContent =
+      "The live breed database is not connected.";
+    el("adminBreedCount").textContent = "";
+    setBreedFormState();
+    return;
+  }
+
+  const query =
+    el("adminBreedSearch").value.toLowerCase().trim();
+
+  const filtered = liveBreeds.filter(breed =>
+    breed.name.toLowerCase().includes(query)
+  );
+
+  el("adminBreedCount").textContent =
+    filtered.length + " of " + liveBreeds.length + " breeds";
+
+  const allowed = canEditBreeds() && !savingBreed;
+
+  for (const breed of filtered) {
+    const row = document.createElement("div");
+    row.className = "breed-admin-item";
+
+    const name = document.createElement("span");
+    name.className = "breed-name";
+    name.textContent = breed.name;
+
+    const label = document.createElement("label");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = Number(breed.complex_coat) === 1;
+    checkbox.disabled = !allowed;
+    checkbox.dataset.action = "coat";
+    checkbox.dataset.breedId = breed.id;
+
+    label.append(
+      checkbox,
+      document.createTextNode("Complex Coat")
+    );
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "Delete";
+    remove.disabled = !allowed;
+    remove.dataset.action = "delete";
+    remove.dataset.breedId = breed.id;
+
+    row.append(name, label, remove);
+    container.appendChild(row);
+  }
+
+  if (!filtered.length) {
+    container.textContent = "No matching breeds found.";
+  }
+
+  setBreedFormState();
+}
+
+async function refreshBreedData() {
+  await loadLiveBreeds();
+  await loadUpdates();
+
+  if (sessionToken) {
+    await loadHistory();
+  }
+}
+
+async function saveBreedChange(action) {
+  if (
+    savingBreed ||
+    !canEditBreeds() ||
+    !breedsConnected
+  ) return;
+
+  savingBreed = true;
+  renderAdminBreeds();
+
+  showBreedMessage("Saving changes...");
+
+  try {
+    await action();
+
+    showBreedMessage("Change saved successfully.");
+
+    await refreshBreedData();
+  } catch (error) {
+    showBreedMessage(
+      "Could not complete the change: " + error.message,
+      true
+    );
+
+    try {
+      await loadLiveBreeds();
+    } catch (refreshError) {
+      console.warn("Unable to refresh breeds:", refreshError);
+    }
+  } finally {
+    savingBreed = false;
+    renderAdminBreeds();
+  }
+}
+
+async function addBreed() {
+  const name = el("newBreedName").value.trim();
+  const complex_coat = el("newBreedComplex").checked;
+
+  if (!name) {
+    showBreedMessage("Please enter a breed name.", true);
+    return;
+  }
+
+  await saveBreedChange(async () => {
+    await apiRequest("/breeds", {
+      method: "POST",
+      body: JSON.stringify({ name, complex_coat })
+    });
+
+    el("newBreedName").value = "";
+    el("newBreedComplex").checked = false;
+  });
+}
+
+async function changeBreedCoat(id, checked) {
+  await saveBreedChange(async () => {
+    await apiRequest(
+      "/breeds/" + encodeURIComponent(id),
+      {
+        method: "PATCH",
+        body: JSON.stringify({
+          complex_coat: checked
+        })
+      }
+    );
+  });
+}
+
+async function deleteBreed(id) {
+  const breed = liveBreeds.find(item => item.id === id);
+  if (!breed) return;
+
+  const confirmed = window.confirm(
+    'Delete "' + breed.name + '" from the Breed Guide?'
+  );
+
+  if (!confirmed) return;
+
+  await saveBreedChange(async () => {
+    await apiRequest(
+      "/breeds/" + encodeURIComponent(id),
+      { method: "DELETE" }
+    );
+  });
+}
+
+
+/* ---------- Live Location and ZIP Management ---------- */
+function canEditLocations() {
+  return can("update_locations");
+}
+function locationMessage(id, message, error = false) {
+  const node = el(id);
+  node.textContent = message;
+  node.classList.toggle("error", error);
+}
+function getManagedLocation(id) {
+  return managedLocations.find(loc => loc.id === id);
+}
+function renderLocationChoices() {
+  const picks = [el("locationPick"), el("zipLocationPick")];
+  const selected = picks.map(node => node.value);
+  for (let i = 0; i < picks.length; i++) {
+    const pick = picks[i];
+    pick.replaceChildren();
+    const initial = document.createElement("option");
+    initial.value = "";
+    initial.textContent = "Select a location...";
+    pick.appendChild(initial);
+    for (const loc of managedLocations) {
+      const option = document.createElement("option");
+      option.value = loc.id;
+      option.textContent = loc.name + (loc.enabled ? "" : " (disabled)");
+      pick.appendChild(option);
+    }
+    if (managedLocations.some(loc => loc.id === selected[i])) pick.value = selected[i];
+  }
+  el("adminLocationCount").textContent =
+    managedLocations.length + " locations in database · " +
+    managedLocations.filter(loc => loc.enabled).length + " enabled";
+}
+async function loadManagedLocations(preferredId) {
+  if (!sessionToken) return;
+  try {
+    const result = await apiRequest("/locations");
+    if (!Array.isArray(result.locations)) throw new Error("Invalid locations response");
+    managedLocations = result.locations;
+    renderLocationChoices();
+    if (preferredId) el("locationPick").value = preferredId;
+    if (el("locationPick").value) fillLocationEditor();
+    if (el("zipLocationPick").value) fillZipEditor();
+    locationMessage("locationAdminMessage", "Live location database connected.");
+  } catch (error) {
+    locationMessage("locationAdminMessage", "Could not load locations: " + error.message, true);
+  }
+}
+function fillLocationEditor() {
+  const loc = getManagedLocation(el("locationPick").value);
+  newLocationMode = false;
+  el("locationEditor").hidden = !loc;
+  if (!loc) return;
+  el("locName").value = loc.name || "";
+  el("locPhone").value = loc.phone || "";
+  el("locMoego").value = loc.moego || "";
+  el("locTimezone").value = loc.timezone || "";
+  el("locVaccination").value = loc.vaccination || "";
+  el("locCard").value = loc.card_on_file || "";
+  el("locNotes").value = loc.notes || "";
+  el("locEnabled").checked = !!loc.enabled;
+  el("locationDisable").hidden = !loc.enabled || !can("delete_locations");
+  el("locationSave").disabled = !can("update_locations");
+  for (const field of ["locName","locPhone","locMoego","locTimezone","locVaccination","locCard","locNotes","locEnabled"]) el(field).disabled = !can("update_locations");
+}
+function fillZipEditor() {
+  const loc = getManagedLocation(el("zipLocationPick").value);
+  el("zipEditor").disabled = !loc || !can("update_locations");
+  el("zipSave").disabled = !loc || !can("update_locations");
+  el("zipEditor").value = loc ? (loc.zips || []).join("\n") : "";
+  el("zipEditorCount").textContent = loc
+    ? (loc.zips || []).length + " assigned ZIP entries" : "";
+}
+async function refreshAfterLocationSave(id) {
+  const result = await apiRequest("/public/locations");
+  if (!Array.isArray(result.locations)) throw new Error("Invalid public location data");
+  DATA.locations = result.locations;
+  rebuildLocationIndex();
+  renderHubMarkers();
+  resetMap();
+  await loadManagedLocations(id);
+  await loadUpdates();
+  await loadHistory();
+}
+async function saveLocation() {
+  if (locationBusy || !(newLocationMode ? can("create_locations") : can("update_locations"))) return;
+  const id = el("locationPick").value;
+  const previous = getManagedLocation(id);
+  if (!newLocationMode && !previous) return;
+  const payload = {
+    name: el("locName").value.trim(),
+    phone: el("locPhone").value.trim(),
+    moego: el("locMoego").value.trim(),
+    timezone: el("locTimezone").value,
+    vaccination: el("locVaccination").value.trim(),
+    card_on_file: el("locCard").value.trim(),
+    notes: el("locNotes").value.trim(),
+    enabled: el("locEnabled").checked
+  };
+  if (!payload.name) {
+    locationMessage("locationAdminMessage", "Please enter a location name.", true);
+    return;
+  }
+  if (newLocationMode) payload.zips = [];
+  locationBusy = true;
+  el("locationSave").disabled = true;
+  try {
+    const response = await apiRequest(
+      newLocationMode ? "/locations" : "/locations/" + encodeURIComponent(id),
+      { method: newLocationMode ? "POST" : "PATCH", body: JSON.stringify(payload) }
+    );
+    newLocationMode = false;
+    await refreshAfterLocationSave(response.location.id);
+    locationMessage("locationAdminMessage", "Location saved successfully.");
+  } catch (error) {
+    locationMessage("locationAdminMessage", "Could not save location: " + error.message, true);
+  } finally {
+    locationBusy = false;
+    el("locationSave").disabled = !(newLocationMode ? can("create_locations") : can("update_locations"));
+  }
+}
+async function disableLocation() {
+  const id = el("locationPick").value;
+  const loc = getManagedLocation(id);
+  if (!loc || !can("delete_locations") || locationBusy) return;
+  if (!confirm('Disable "' + loc.name + '" in the public locator? ZIP data will be kept.')) return;
+  locationBusy = true;
+  try {
+    await apiRequest("/locations/" + encodeURIComponent(id), { method: "DELETE" });
+    await refreshAfterLocationSave(id);
+    locationMessage("locationAdminMessage", "Location disabled. You can re-enable it with the checkbox.");
+  } catch (error) {
+    locationMessage("locationAdminMessage", "Could not disable location: " + error.message, true);
+  } finally {
+    locationBusy = false;
+  }
+}
+async function saveLocationZips() {
+  const id = el("zipLocationPick").value;
+  const loc = getManagedLocation(id);
+  if (!loc || !canEditLocations() || locationBusy) return;
+  const tokens = el("zipEditor").value.split(/[\s,;]+/).filter(Boolean);
+  const invalid = tokens.filter(zip => !/^\d{5}$/.test(zip));
+  if (invalid.length) {
+    locationMessage("zipAdminMessage", "Invalid ZIP: " + invalid.slice(0, 5).join(", ") +
+      ". Each ZIP must have exactly five digits.", true);
+    return;
+  }
+  const zips = [...new Set(tokens)];
+  if (zips.length > 3000) {
+    locationMessage("zipAdminMessage", "Maximum 3,000 ZIP codes per location.", true);
+    return;
+  }
+  locationBusy = true;
+  el("zipSave").disabled = true;
+  try {
+    await apiRequest("/locations/" + encodeURIComponent(id), {
+      method: "PATCH", body: JSON.stringify({ zips })
+    });
+    await refreshAfterLocationSave();
+    el("zipLocationPick").value = id;
+    fillZipEditor();
+    locationMessage("zipAdminMessage", zips.length + " ZIP codes saved successfully.");
+  } catch (error) {
+    locationMessage("zipAdminMessage", "Could not save ZIP codes: " + error.message, true);
+  } finally {
+    locationBusy = false;
+    el("zipSave").disabled = !canEditLocations();
+  }
+}
+el("locationPick").addEventListener("change", fillLocationEditor);
+el("zipLocationPick").addEventListener("change", fillZipEditor);
+el("locationNew").addEventListener("click", () => {
+  if (!can("create_locations")) return;
+  newLocationMode = true;
+  el("locationPick").value = "";
+  el("locationEditor").hidden = false;
+  for (const id of ["locName", "locPhone", "locMoego", "locVaccination", "locCard", "locNotes"]) el(id).value = "";
+  el("locTimezone").value = "";
+  el("locEnabled").checked = true;
+  el("locationDisable").hidden = true;
+  el("locationSave").disabled = false;
+  for (const field of ["locName","locPhone","locMoego","locTimezone","locVaccination","locCard","locNotes","locEnabled"]) el(field).disabled = false;
+  locationMessage("locationAdminMessage", "Creating a new location. Add ZIPs in the ZIP Codes tab after saving.");
+});
+el("locationSave").addEventListener("click", saveLocation);
+el("locationDisable").addEventListener("click", disableLocation);
+el("zipSave").addEventListener("click", saveLocationZips);
+
+/* ---------- Change History ---------- */
+
+async function loadHistory() {
+  const container = el("adminAuditHistory");
+
+  if (!sessionToken) {
+    container.textContent = "Sign in to view change history.";
+    return;
+  }
+
+  if (!can("view_audit_log")) {
+    container.textContent = "Your account does not have permission to view audit history.";
+    return;
+  }
+  container.textContent = "Loading change history...";
+
+  try {
+    const result = await apiRequest("/history");
+    const history = result.history || [];
+
+    container.replaceChildren();
+
+    if (!history.length) {
+      container.textContent =
+        "No recorded employee changes yet. " +
+        "The initial breed import does not count as an employee edit.";
+      return;
+    }
+
+    for (const entry of history) {
+      const row = document.createElement("div");
+      row.className = "audit-item";
+
+      const heading = document.createElement("strong");
+      heading.textContent =
+        entry.item_name + " — " +
+        entry.action.replace(/_/g, " ");
+
+      const details = document.createElement("small");
+      details.textContent =
+        entry.section + " • " +
+        entry.changed_by + " • " +
+        dateLabel(entry.changed_at);
+
+      row.append(heading, details);
+      container.appendChild(row);
+    }
+  } catch (error) {
+    container.textContent =
+      "Unable to load change history: " + error.message;
+  }
+}
+
+/* ---------- Employee Management ---------- */
+let employees = [];
+let employeeBusy = false;
+function employeeMessage(message, error = false) {
+  el("employeeMessage").textContent = message;
+  el("employeeMessage").classList.toggle("error", error);
+}
+function permissionBoxes(container, assigned = [], disabled = false) {
+  container.replaceChildren();
+  for (const [key, label] of Object.entries(PERMISSION_LABELS)) {
+    const wrapper = document.createElement("label");
+    const box = document.createElement("input");
+    box.type = "checkbox";
+    box.value = key;
+    box.checked = assigned.includes(key);
+    box.disabled = disabled || !can(key);
+    wrapper.append(box, document.createTextNode(label));
+    container.appendChild(wrapper);
+  }
+}
+function selectedPermissions(container) {
+  return [...container.querySelectorAll('input[type="checkbox"]:checked')].map(box => box.value);
+}
+function renderEmployeeCreate() {
+  const allowed = can("manage_users");
+  el("employeeCreateForm").hidden = !allowed;
+  el("employeeNewRole").querySelector('option[value="super_admin"]').hidden = sessionUser?.role !== "super_admin";
+  if (sessionUser?.role !== "super_admin" && el("employeeNewRole").value === "super_admin") el("employeeNewRole").value = "editor";
+  const superRole = el("employeeNewRole").value === "super_admin";
+  permissionBoxes(el("employeeCreatePermissions"), superRole ? ALL_PERMISSION_KEYS : [], superRole);
+}
+async function loadEmployees() {
+  if (!can("manage_users")) {
+    el("employeeList").textContent = "You do not have permission to manage employee accounts.";
+    el("employeeCreateForm").hidden = true;
+    return;
+  }
+  el("employeeList").textContent = "Loading employees...";
+  try {
+    const result = await apiRequest("/users");
+    employees = result.users || [];
+    renderEmployeeList();
+  } catch (error) { employeeMessage("Could not load accounts: " + error.message, true); }
+}
+function renderEmployeeList() {
+  const container = el("employeeList");
+  container.replaceChildren();
+  for (const person of employees) {
+    const protectedAccount = person.username === "FurryLandAdmin";
+    const self = person.id === sessionUser?.id;
+    const isSuper = person.role === "super_admin";
+    const canManage = !protectedAccount && !self && (!isSuper || sessionUser?.role === "super_admin");
+    const higher = !isSuper && sessionUser?.role !== "super_admin" && (person.permissions || []).some(p => !can(p));
+    const card = document.createElement("div");
+    card.className = "employee-card";
+    const title = document.createElement("strong");
+    title.textContent = person.username + " · " + (isSuper ? "Super Admin" : person.role) + " · " + (person.enabled ? "Active" : "Inactive") + (protectedAccount ? " · Protected" : "");
+    card.appendChild(title);
+    const perms = document.createElement("div");
+    perms.className = "employee-permissions";
+    permissionBoxes(perms, person.permissions || [], !canManage || higher || isSuper);
+    card.appendChild(perms);
+    if (canManage) {
+      const actions = document.createElement("div");
+      actions.className = "admin-form-row employee-actions";
+      if (!higher && !isSuper) {
+        const save = document.createElement("button");
+        save.textContent = "Save Permissions";
+        save.addEventListener("click", () => modifyEmployee(person, {permissions: selectedPermissions(perms)}));
+        actions.appendChild(save);
+      }
+      const toggle = document.createElement("button");
+      toggle.textContent = person.enabled ? "Deactivate" : "Reactivate";
+      toggle.disabled = higher && !person.enabled;
+      toggle.addEventListener("click", () => {
+        if (confirm((person.enabled ? "Deactivate " : "Reactivate ") + person.username + "?")) modifyEmployee(person, {enabled: person.enabled ? 0 : 1});
+      });
+      actions.appendChild(toggle);
+      if (!higher) {
+        const reset = document.createElement("button");
+        reset.textContent = "Reset Password";
+        reset.addEventListener("click", async () => {
+          const password = prompt("Enter a new password (at least 14 characters) for " + person.username + ":");
+          if (password === null) return;
+          if (password.length < 14 || password.length > 128) return employeeMessage("Password must be 14–128 characters.", true);
+          await modifyEmployee(person, {password});
+        });
+        actions.appendChild(reset);
+      }
+      card.appendChild(actions);
+    }
+    container.appendChild(card);
+  }
+}
+async function modifyEmployee(person, change) {
+  if (employeeBusy || !can("manage_users")) return;
+  employeeBusy = true;
+  employeeMessage("Saving account...");
+  try {
+    await apiRequest("/users/" + encodeURIComponent(person.id), {method:"PATCH",body:JSON.stringify(change)});
+    employeeMessage("Account updated successfully.");
+    await loadEmployees();
+    if (can("view_audit_log")) loadHistory();
+  } catch(error) { employeeMessage("Could not update account: " + error.message, true); }
+  finally { employeeBusy = false; }
+}
+el("employeeNewRole").addEventListener("change", renderEmployeeCreate);
+el("employeeCreateForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  if (employeeBusy || !can("manage_users")) return;
+  const role = el("employeeNewRole").value;
+  const username = el("employeeNewName").value.trim();
+  const password = el("employeeNewPassword").value;
+  const permissions = role === "super_admin" ? ALL_PERMISSION_KEYS : selectedPermissions(el("employeeCreatePermissions"));
+  employeeBusy = true;
+  employeeMessage("Creating account...");
+  try {
+    await apiRequest("/users", {method:"POST",body:JSON.stringify({username,password,role,permissions})});
+    el("employeeNewName").value = "";
+    el("employeeNewPassword").value = "";
+    employeeMessage("Employee created successfully.");
+    await loadEmployees();
+    if (can("view_audit_log")) loadHistory();
+  } catch(error) { employeeMessage("Could not create account: " + error.message, true); }
+  finally { employeeBusy = false; }
+});
+el("selfPasswordForm").addEventListener("submit", async event => {
+  event.preventDefault();
+  try {
+    await apiRequest("/change-password", {method:"POST",body:JSON.stringify({current_password:el("selfOldPassword").value,new_password:el("selfNewPassword").value})});
+    alert("Password changed. Please sign in again.");
+    clearSession();
+  } catch(error) { employeeMessage("Password change failed: " + error.message, true); }
+});
+
+/* ---------- Event listeners ---------- */
+
+el("locatorTab").addEventListener(
+  "click", () => showPublicPage("locator")
+);
+
+el("breedTab").addEventListener(
+  "click", () => showPublicPage("breed")
+);
+
+el("menuButton").addEventListener(
+  "click", () => toggleMenu()
+);
+
+el("menuLogin").addEventListener("click", openLogin);
+el("menuDashboard").addEventListener("click", openDashboard);
+el("menuLogout").addEventListener("click", logoutRequest);
+
+el("closeLogin").addEventListener("click", closeLogin);
+
+el("loginModal").addEventListener("click", event => {
+  if (event.target === el("loginModal")) {
+    closeLogin();
+  }
+});
+
+document.addEventListener("keydown", event => {
+  if (event.key === "Escape") {
+    if (!el("loginModal").hidden) {
+      closeLogin();
+    }
+
+    toggleMenu(false);
+  }
+});
+
+document.addEventListener("click", event => {
+  if (!event.target.closest(".topbar-actions")) {
+    toggleMenu(false);
+  }
+});
+
+el("loginForm").addEventListener("submit", loginRequest);
+
+el("adminBack").addEventListener(
+  "click", () => showPublicPage("locator")
+);
+
+el("addBreedButton").addEventListener("click", addBreed);
+
+el("newBreedName").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    event.preventDefault();
+
+    if (!el("addBreedButton").disabled) {
+      addBreed();
+    }
+  }
+});
+
+el("adminBreedSearch").addEventListener(
+  "input", renderAdminBreeds
+);
+
+el("breedAdminList").addEventListener("change", event => {
+  const target = event.target;
+
+  if (target.dataset.action !== "coat") return;
+
+  changeBreedCoat(
+    target.dataset.breedId,
+    target.checked
+  );
+});
+
+el("breedAdminList").addEventListener("click", event => {
+  const target = event.target;
+
+  if (target.dataset.action !== "delete") return;
+
+  deleteBreed(target.dataset.breedId);
+});
+
+document.querySelectorAll("[data-admin-tab]").forEach(button => {
+  button.addEventListener("click", () => {
+    const selected = button.dataset.adminTab;
+
+    document.querySelectorAll("[data-admin-tab]").forEach(item => {
+      item.classList.toggle("active", item === button);
+    });
+
+    document.querySelectorAll("[data-admin-panel]").forEach(panel => {
+      panel.hidden = panel.dataset.adminPanel !== selected;
+    });
+
+    if (selected === "locations" || selected === "zips") {
+      loadManagedLocations();
+    }
+
+    if (selected === "breeds") {
+      renderAdminBreeds();
+
+      loadLiveBreeds().catch(error => {
+        showBreedMessage(
+          "Could not refresh breed data: " + error.message,
+          true
+        );
+      });
+    }
+
+    if (selected === "employees") { renderEmployeeCreate(); loadEmployees(); }
+    if (selected === "updates") {
+      loadUpdates();
+      loadHistory();
+    }
+  });
+});
+
+/* ---------- Startup ---------- */
+
+window.addEventListener("load", async () => {
+  initMap();
+  rebuildLocationIndex();
+  renderBreeds();
+  renderAdminBreeds();
+  updateAuthMenu();
+
+  await loadWebsiteData();
+});
+</script>
+
+</body>
+</html>
